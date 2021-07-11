@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\RegisterRequest;
+use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
 
 use App\Http\Controllers\Api\BaseController;
@@ -26,6 +27,22 @@ class JWTAuthController extends BaseController
         $token = auth()->attempt($credentials);
 
         // dd($token);
+
+        if(!$token) {
+            return response()->json(['error' => 'Unauthorized'], RESPONSE::HTTP_UNAUTHORIZED);
+        }
+
+        return $this->respondWithToken($token);
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'acess_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL(),
+            'current_user' => auth()->user()
+        ]);
     }
 
     public function register(RegisterRequest $request){
